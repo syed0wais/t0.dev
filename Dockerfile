@@ -1,18 +1,11 @@
 # Use Node.js LTS version with Alpine for smaller image size
 FROM node:20-alpine
 
-# Add tini and python3 for better signal handling and whisper support
-RUN apk add --no-cache tini python3 py3-pip
+# Add tini for better signal handling
+RUN apk add --no-cache tini
 
 # Create app directory
 WORKDIR /usr/src/app
-
-# Create and activate virtual environment for Whisper
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Install Whisper in the virtual environment
-RUN . /opt/venv/bin/activate && pip3 install whisper
 
 # Copy package files first for better caching
 COPY package*.json ./
