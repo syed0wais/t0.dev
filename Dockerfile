@@ -1,25 +1,38 @@
-FROM node:18
+# Use Node.js LTS version with Alpine for smaller image size
+FROM node:20-alpine
 
-# Set working directory
+# Add tini for better signal handling
+RUN apk add --no-cache tini
+
+# Create app directory
 WORKDIR /usr/src/app
 
-# Copy package files and install dependencies
+# Copy package files first for better caching
 COPY package*.json ./
-RUN npm install
 
-# Copy app files
+# Install dependencies with clean npm cache
+RUN npm ci --only=production && \
+    npm cache clean --force
+
+# Copy app source and hardcode the API keys in server.js
 COPY . .
 
-# Create directories and set permissions
-RUN mkdir -p /usr/src/app/uploads && \
-    mkdir -p /usr/src/app/previews && \
-    chown -R node:node /usr/src/app
+# Update server.js with hardcoded values
+RUN sed -i "s/process.env.FIGMA_TOKEN/\"figd_gJodVHdqIyuyNRFcKTJ-48xWDjRdFKln4VC3qOCm\"/" server.js && \
+    sed -i "s/process.env.GEMINI_API_KEY/\"AIzaSyByaRJkoVkLv6YxkohXUx39_JwjzFIvC-E\"/" server.js
 
-# Switch to non-root user for security
+# Create required directories
+RUN mkdir -p downloads workspaces previews uploads && \
+    chown -R node:node .
+
+# Use non-root user
 USER node
 
-# Expose port (match your server.js port)
+# Expose port
 EXPOSE 3000
 
-# Start the app
-CMD ["node", "server.js"]
+# Use tini as entrypoint
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Start the application
+CMD [ "npm", "start" ]
