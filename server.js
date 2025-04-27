@@ -1115,7 +1115,7 @@ async function buildAndServeAngular(jobId, workDir) {
     // Step 3: Process the built files to fix stylesheet references
     const distDir = path.join(workDir, "dist/figma-angular");
     const distIndexPath = path.join(distDir, "index.html");
-    if (await fs.pathExists(indexPath)) {
+    if (await fs.pathExists(distIndexPath)) {
       // Find the hashed stylesheet file
       const files = await fs.readdir(distDir);
       const styleFile = files.find(
@@ -1124,7 +1124,7 @@ async function buildAndServeAngular(jobId, workDir) {
       if (styleFile) {
         console.log(`Found stylesheet: ${styleFile}`);
         // Update the index.html to use the correct hashed filename
-        let indexContent = await fs.readFile(indexPath, "utf8");
+        let indexContent = await fs.readFile(distIndexPath, "utf8");
         indexContent = indexContent.replace(/<base href="\/">/g, "");
         indexContent = indexContent.replace(
           /<link rel="stylesheet" href="styles\.css">/g,
@@ -1150,7 +1150,7 @@ async function buildAndServeAngular(jobId, workDir) {
     // Update the index.html in preview directory to use relative paths
     const indexPath = path.join(previewDir, "index.html");
     if (await fs.pathExists(indexPath)) {
-      let indexContent = await fs.readFile(indexPath, "utf8");
+      let indexContent = await fs.readFile(distIndexPath, "utf8");
       // Remove base href
       indexContent = indexContent.replace(/<base href="[^"]*">/g, '');
       // Update asset paths to be relative

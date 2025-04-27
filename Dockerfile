@@ -13,16 +13,23 @@ COPY package*.json ./
 # Install dependencies with clean npm cache and global Angular CLI
 RUN npm ci --only=production && \
     npm cache clean --force && \
-    npm install -g @angular/cli
+    npm install -g @angular/cli@latest
 
-# Copy app source
+# Copy app source and hardcode the API keys in server.js
 COPY . .
 
-# Create required directories and ensure they persist
-RUN mkdir -p /usr/src/app/downloads /usr/src/app/workspaces /usr/src/app/previews /usr/src/app/uploads && \
+# Update server.js with hardcoded values
+RUN sed -i "s/process.env.FIGMA_TOKEN/\"figd_gJodVHdqIyuyNRFcKTJ-48xWDjRdFKln4VC3qOCm\"/" server.js && \
+    sed -i "s/process.env.GEMINI_API_KEY/\"AIzaSyByaRJkoVkLv6YxkohXUx39_JwjzFIvC-E\"/" server.js
+
+# Create required directories and set permissions
+RUN mkdir -p downloads workspaces previews uploads && \
+    chown -R node:node . && \
+    # Ensure global npm permissions for node user
     mkdir -p /home/node/.npm && \
-    chown -R node:node /usr/src/app && \
-    chown -R node:node /home/node/.npm
+    chown -R node:node /home/node/.npm && \
+    # Give node user access to necessary directories
+    chmod -R 755 downloads workspaces previews uploads
 
 # Use non-root user
 USER node
