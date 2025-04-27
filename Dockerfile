@@ -17,16 +17,19 @@ RUN . /opt/venv/bin/activate && pip3 install whisper
 # Copy package files first for better caching
 COPY package*.json ./
 
-# Install dependencies with clean npm cache
+# Install dependencies with clean npm cache and global Angular CLI
 RUN npm ci --only=production && \
-    npm cache clean --force
+    npm cache clean --force && \
+    npm install -g @angular/cli
 
 # Copy app source
 COPY . .
 
 # Create required directories and ensure they persist
 RUN mkdir -p /usr/src/app/downloads /usr/src/app/workspaces /usr/src/app/previews /usr/src/app/uploads && \
-    chown -R node:node /usr/src/app
+    chown -R node:node /usr/src/app && \
+    # Give node user permission to install packages
+    chown -R node:node /usr/src/app/.npm
 
 # Use non-root user
 USER node
