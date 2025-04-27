@@ -27,9 +27,9 @@ COPY . .
 
 # Create required directories and ensure they persist
 RUN mkdir -p /usr/src/app/downloads /usr/src/app/workspaces /usr/src/app/previews /usr/src/app/uploads && \
+    mkdir -p /home/node/.npm && \
     chown -R node:node /usr/src/app && \
-    # Give node user permission to install packages
-    chown -R node:node /usr/src/app/.npm
+    chown -R node:node /home/node/.npm
 
 # Use non-root user
 USER node
