@@ -19,7 +19,13 @@ app.use(cors());
 app.use(express.json());
 // app.use(express.static("public"));
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/previews", express.static("previews"));
+app.use("/previews", express.static(path.join(__dirname, "previews")));
+app.use("/downloads", express.static(path.join(__dirname, "downloads")));
+
+// Add a health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "healthy" });
+});
 
 const FIGMA_API_BASE = "https://api.figma.com/v1";
 const GEMINI_API_KEY = "AIzaSyByaRJkoVkLv6YxkohXUx39_JwjzFIvC-E"
@@ -1108,7 +1114,7 @@ async function buildAndServeAngular(jobId, workDir) {
 
     // Step 3: Process the built files to fix stylesheet references
     const distDir = path.join(workDir, "dist/figma-angular");
-    const indexPath = path.join(distDir, "index.html");
+    const distIndexPath = path.join(distDir, "index.html");
     if (await fs.pathExists(indexPath)) {
       // Find the hashed stylesheet file
       const files = await fs.readdir(distDir);
@@ -1140,6 +1146,18 @@ async function buildAndServeAngular(jobId, workDir) {
     const previewDir = path.join(__dirname, "previews", jobId);
     await fs.ensureDir(previewDir);
     await fs.copy(path.join(workDir, "dist/figma-angular"), previewDir);
+
+    // Update the index.html in preview directory to use relative paths
+    const indexPath = path.join(previewDir, "index.html");
+    if (await fs.pathExists(indexPath)) {
+      let indexContent = await fs.readFile(indexPath, "utf8");
+      // Remove base href
+      indexContent = indexContent.replace(/<base href="[^"]*">/g, '');
+      // Update asset paths to be relative
+      indexContent = indexContent.replace(/src="\//g, 'src="');
+      indexContent = indexContent.replace(/href="\//g, 'href="');
+      await fs.writeFile(indexPath, indexContent);
+    }
 
     return `/previews/${jobId}/index.html`;
   } catch (error) {

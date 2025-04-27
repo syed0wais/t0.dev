@@ -1,4 +1,5 @@
-const API_BASE = "http://localhost:3000";
+// Update API_BASE to use the current host
+const API_BASE = window.location.origin;
 let mediaRecorder;
 let audioChunks = [];
 let jobId = null;
@@ -284,6 +285,19 @@ function updateStatus(jobData) {
     document.getElementById("result").classList.add("visible");
     document.getElementById("preview-link").href = jobData.previewUrl;
     document.getElementById("download-link").href = jobData.downloadUrl;
+  }
+}
+
+function updateStatus(data) {
+  if (data.status === "completed") {
+    const previewUrl = new URL(data.previewUrl, window.location.origin).href;
+    const downloadUrl = new URL(data.downloadUrl, window.location.origin).href;
+    
+    // Update preview and download links
+    document.querySelector("#preview-link").href = previewUrl;
+    document.querySelector("#download-link").href = downloadUrl;
+    
+    document.querySelector(".result-section").classList.add("visible");
   }
 }
 
