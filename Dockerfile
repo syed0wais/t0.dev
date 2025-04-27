@@ -1,38 +1,30 @@
-# Use Node.js LTS version with Alpine for smaller image size
-FROM node:20-alpine
+# Use official Node.js image
+FROM node:18
 
-# Add tini for better signal handling
-RUN apk add --no-cache tini
-
-# Create app directory
+# Set working directory
 WORKDIR /usr/src/app
 
-# Copy package files first for better caching
+# Copy package files and install dependencies
 COPY package*.json ./
+RUN npm install
 
-# Install dependencies with clean npm cache
-RUN npm ci --only=production && \
-    npm cache clean --force
-
-# Copy app source and hardcode the API keys in server.js
+# Copy all source files (excluding node_modules via .dockerignore)
 COPY . .
 
-# Update server.js with hardcoded values
-RUN sed -i "s/process.env.FIGMA_TOKEN/\"figd_gJodVHdqIyuyNRFcKTJ-48xWDjRdFKln4VC3qOCm\"/" server.js && \
-    sed -i "s/process.env.GEMINI_API_KEY/\"AIzaSyByaRJkoVkLv6YxkohXUx39_JwjzFIvC-E\"/" server.js
+# Create a directory for previews and set permissions
+# Note: This directory will be mounted to Render's Persistent Disk
+RUN mkdir -p /usr/src/app/previews && \
+    chown -R node:node /usr/src/app/previews
 
-# Create required directories
-RUN mkdir -p downloads workspaces previews uploads && \
-    chown -R node:node .
+# Explicitly declare the volume for Render's Persistent Disk
+# Render will automatically mount storage here if enabled in the dashboard
+VOLUME /usr/src/app/previews
 
-# Use non-root user
+# Switch to non-root user for security
 USER node
 
-# Expose port
+# Expose the app port (must match your server.js port)
 EXPOSE 3000
 
-# Use tini as entrypoint
-ENTRYPOINT ["/sbin/tini", "--"]
-
 # Start the application
-CMD [ "npm", "start" ]
+CMD ["node", "server.js"]
