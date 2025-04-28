@@ -22,7 +22,7 @@ This application generates angular code using three different input methods: Fig
     pip3 install aws-sdk
     ```
 
-2.  **Install Frontend Dependencies:** Navigate to the frontend part of your project directory in the terminal and run the following command to install the Angular project dependencies:
+2.  **Install Frontend Dependencies:** 
     ```bash
     npm install
     ```
