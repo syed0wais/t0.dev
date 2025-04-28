@@ -32,20 +32,6 @@ This application generates angular code using three different input methods: Fig
     npm start
     ```
 
-## Backend Processing
-  **Agentic Workflow:** A series of specialized agents work on your request:
-    * **Agent 1:** Fetches data from Figma (if a Figma file is provided) or generates a design structure based on the text or voice input.
-    * **Agent 2:** Converts the design structure into Angular code using the Gemini API.
-    * **Agent 3:** Verifies and fixes any issues in the generated Angular code.
-    * **Agent 4:** Creates the necessary Angular project structure and writes the generated code files.
-    * **Agent 5:** Builds the Angular project and prepares it for preview and download.
-
-**Preview and Download Preparation:**
-    * The built Angular project files are copied to the `previews` directory.
-    * A ZIP file of the entire project is created in the `downloads` directory.
-    * The job status is updated to `completed`, and the `previewUrl` and `downloadUrl` are added to the job status.
-
-
 ## Run using docker
 ```bash
 docker-compose up --build
